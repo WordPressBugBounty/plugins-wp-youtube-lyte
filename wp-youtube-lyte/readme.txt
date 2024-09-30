@@ -2,9 +2,11 @@
 Contributors: futtta, optimizingmatters
 Tags: youtube, video, performance, gdpr, lazy load
 Donate link: http://blog.futtta.be/2013/10/21/do-not-donate-to-me/
+License: GPLv3
+License URI: [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html)
 Requires at least: 4.0
-Tested up to: 6.5
-Stable tag: 1.7.23
+Tested up to: 6.6
+Stable tag: 1.7.25
 
 High performance YouTube video, playlist and audio-only embeds which don't slow down your blog and offer optimal accessibility.
 
@@ -143,17 +145,25 @@ Just tell me, I like the feedback! Use the [Contact-page on my blog](http://blog
 
 == Changelog ==
 
+= 1.7.25 =
+* fix for regression that saw youtu.be links in WordPress blocks break.
+
+= 1.7.24 =
+* Compatibility with bedrock-autoloader (thanks to Gerwin Jansen)
+* Improve alignment for Gutenberg YouTube/ video block (kudo's to Benjamin Pick)
+* removed type="text/javascript" attribute from <script tags
+
 = 1.7.23 =
 * fix for PHP deprecation notice in PHP 8.2 in lytePartners.php
 
 = 1.7.22 =
 * fix for figcaption in WordPress video block disappearing (thanks Tomas Hartl !)
-* disabled "lyte kinda texturize" by default (an be re-enabled with a filter)
+* disabled "lyte kinda texturize" by default (can be re-enabled with a filter)
 
 = 1.7.21 =
 * bugfix for regression in parsing improvements which in some cases saw links to youtube being shown as LYTE as well.
 * improvement to lyteCache request sanitation (hat tip to Siina Chavoshlu for reporting & testing the fix)
-* other minor changes, see [GitHub commits](https://github.com/futtta/wp-youtube-lyte/commits/main) 
+* other minor changes, see [GitHub commits](https://github.com/futtta/wp-youtube-lyte/commits/main)
 
 = 1.7.20 =
 * misc. parsing improvements, resulting in YT shorts working as well.
