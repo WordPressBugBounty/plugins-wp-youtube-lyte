@@ -4,7 +4,7 @@ Plugin Name: WP YouTube Lyte
 Plugin URI: http://blog.futtta.be/wp-youtube-lyte/
 Description: Lite and accessible YouTube audio and video embedding.
 Author: Frank Goossens (futtta)
-Version: 1.7.25
+Version: 1.7.26
 Author URI: http://blog.futtta.be/
 Text Domain: wp-youtube-lyte
 */
@@ -14,7 +14,7 @@ Text Domain: wp-youtube-lyte
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 $debug           = false;
-$lyte_version    = '1.7.25';
+$lyte_version    = '1.7.26';
 $lyte_db_version = get_option( 'lyte_version', 'none' );
 
 /** have we updated? */
@@ -784,7 +784,7 @@ function lyte_prepare( $the_content ) {
                 }
             }
             $alignClasses = isset($params['align']) ? ' lyte-align align' . $params['align'] : ''; 
-            return '<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube ' . (isset($params['className']) ? $params['className'] : '') . $alignClasses . '">' . $url . '<figcaption>' . (isset($params['caption']) ? $params['caption'] : '') . '</figcaption></figure>';
+            return '<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube ' . (isset($params['className']) ? $params['className'] : '') . $alignClasses . '">' . $url . '<figcaption>' . (isset($matches['caption']) ? $matches['caption'] : '') . '</figcaption></figure>';
         }, $the_content );
     }
 
