@@ -4,7 +4,7 @@ Plugin Name: WP YouTube Lyte
 Plugin URI: http://blog.futtta.be/wp-youtube-lyte/
 Description: Lite and accessible YouTube audio and video embedding.
 Author: Frank Goossens (futtta)
-Version: 1.7.26
+Version: 1.7.27
 Author URI: http://blog.futtta.be/
 Text Domain: wp-youtube-lyte
 */
@@ -14,7 +14,7 @@ Text Domain: wp-youtube-lyte
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 $debug           = false;
-$lyte_version    = '1.7.26';
+$lyte_version    = '1.7.27';
 $lyte_db_version = get_option( 'lyte_version', 'none' );
 
 /** have we updated? */
@@ -61,44 +61,46 @@ if (!$debug) {
     lyte_rm_cache();
 }
 
-/** get paths, language and includes */
-$plugin_dir = basename( dirname( __FILE__ ) ) . '/languages';
-load_plugin_textdomain( 'wp-youtube-lyte', null, $plugin_dir );
-require_once( dirname( __FILE__ ) . '/player_sizes.inc.php' );
+/** get includes */
 require_once( dirname( __FILE__ ) . '/widget.php' );
 
-/** get default embed size and build array to change size later if requested */
-$oSize = (int) get_option( 'lyte_size' );
-if ( (is_bool( $oSize ) ) || ( $pSize[$oSize]['a'] === false ) ) {
-    $sel = (int) $pDefault;
-} else {
-    $sel=$oSize;
+function init_settings() {
+	global $pDefault, $pSize, $pSizeOrder, $wDefault, $wSize, $lyteSettings, $wyl_version, $wyl_file, $wyl_file_lazyload;
+
+	require_once( dirname( __FILE__ ) . '/player_sizes.inc.php' );
+
+	/** get default embed size and build array to change size later if requested */
+	$oSize = (int) get_option( 'lyte_size' );
+	if ( (is_bool( $oSize ) ) || ( $pSize[$oSize]['a'] === false ) ) {
+		$sel = (int) $pDefault;
+	} else {
+		$sel=$oSize;
+	}
+
+	$pSizeFormat = $pSize[$sel]['f'];
+	$j           = 0;
+
+	foreach ( $pSizeOrder[$pSizeFormat] as $sizeId ) {
+		$sArray[$j]['w'] = (int) $pSize[$sizeId]['w'];
+		$sArray[$j]['h'] = (int) $pSize[$sizeId]['h'];
+		if ( $sizeId === $sel ) {
+			$selSize=$j;
+		}
+		$j++;
+	}
+
+	/** get other options and push in array*/
+	$lyteSettings['sizeArray']                    = $sArray;
+	$lyteSettings['selSize']                      = $selSize;
+	$lyteSettings['links']                        = get_option( 'lyte_show_links' );
+	$lyteSettings['file']                         = $wyl_file . '?wyl_version=' . $wyl_version;
+	$lyteSettings['file_lazyload']                = $wyl_file_lazyload . '?wyl_version=' . $wyl_version;
+	$lyteSettings['ratioClass']                   = ( $pSizeFormat === '43' ) ? ' fourthree' : '';
+	$lyteSettings['pos']                          = ( get_option( 'lyte_position', '0' ) === '1' ) ? 'margin:5px auto;' : 'margin:5px;';
+	$lyteSettings['microdata']                    = get_option( 'lyte_microdata', '1' );
+	$lyteSettings['hidef']                        = get_option( 'lyte_hidef', 0 );
+	$lyteSettings['scheme']                       = ( is_ssl() ) ? 'https' : 'http';
 }
-
-$pSizeFormat = $pSize[$sel]['f'];
-$j           = 0;
-
-foreach ( $pSizeOrder[$pSizeFormat] as $sizeId ) {
-    $sArray[$j]['w'] = (int) $pSize[$sizeId]['w'];
-    $sArray[$j]['h'] = (int) $pSize[$sizeId]['h'];
-    if ( $sizeId === $sel ) {
-        $selSize=$j;
-    }
-    $j++;
-}
-
-/** get other options and push in array*/
-global $lyteSettings;
-$lyteSettings['sizeArray']                    = $sArray;
-$lyteSettings['selSize']                      = $selSize;
-$lyteSettings['links']                        = get_option( 'lyte_show_links' );
-$lyteSettings['file']                         = $wyl_file . '?wyl_version=' . $wyl_version;
-$lyteSettings['file_lazyload']                = $wyl_file_lazyload . '?wyl_version=' . $wyl_version;
-$lyteSettings['ratioClass']                   = ( $pSizeFormat === '43' ) ? ' fourthree' : '';
-$lyteSettings['pos']                          = ( get_option( 'lyte_position', '0' ) === '1' ) ? 'margin:5px auto;' : 'margin:5px;';
-$lyteSettings['microdata']                    = get_option( 'lyte_microdata', '1' );
-$lyteSettings['hidef']                        = get_option( 'lyte_hidef', 0 );
-$lyteSettings['scheme']                       = ( is_ssl() ) ? 'https' : 'http';
 
 /** API: filter hook to alter $lyteSettings */
 function lyte_settings_enforcer() {
@@ -772,14 +774,14 @@ function lyte_prepare( $the_content ) {
          * https://media1.giphy.com/media/l2QZTNMFTQ2Z00zHG/giphy.gif
          */
         $gutenbeard_regex = '%<\!--\s?wp:(?:core[-|/])?embed(?:/youtube)?\s?{(?<params>[^}]+)}\s?-->.*(?:(?:<figcaption[^>]*>(?<caption>.*)</figcaption>).*)?<\!--\s?/wp:(?:core[-|/])?embed(?:/youtube)?\s?-->%Us';
-        $the_content             = preg_replace_callback( $gutenbeard_regex, function($matches) {
+        $the_content      = preg_replace_callback( $gutenbeard_regex, function($matches) {
             $params = json_decode('{' . $matches['params'] . '}', true);
-            if (empty($params['url'])) return $matches[0];
+            if ( empty( $params['url'] ) ) return $matches[0];
             $count = 0;
-            $url = str_replace('https://www.youtube.com/playlist?list=', 'httpv://www.youtube.com/playlist?list=', $params['url'], $count);
-            if (!$count) {
-                $url = preg_replace('%^https?://(?:www\.)?youtu(?:be\.com/watch\?v=|.be/)%', 'httpv://www.youtube.com/watch?v=', $params['url'], 1, $count);
-                if (!$count) {
+            $url   = str_replace( 'https://www.youtube.com/playlist?list=', 'httpv://www.youtube.com/playlist?list=', $params['url'], $count );
+            if ( ! $count ) {
+                $url = preg_replace( '%^https?://(?:www\.)?youtu(?:be\.com/watch\?v=|.be/)%', 'httpv://www.youtube.com/watch?v=', $params['url'], 1, $count );
+                if ( ! $count ) {
                     return $matches[0];
                 }
             }
@@ -801,7 +803,7 @@ function lyte_prepare( $the_content ) {
                 foreach ( $vids as $vid ) {
                     if ( is_array( $vid ) && array_key_exists( 1, $vid ) && false === strpos( trim( $vid[0] ), ' ' ) ) {
                         $vid_repla   = str_replace( $vid[1], $prep_repla['replace'], $vid[0] );
-                        $the_content = str_replace( $vid[0], $vid_repla, $the_content );
+                        $the_content = preg_replace( '/^' . preg_quote($vid[0], '/') . '/m', $vid_repla, $the_content );
                     }
                 }
             }
@@ -846,18 +848,25 @@ function lytecache_doublecheck_activator() {
     }
 }
 
+function lyte_plugin_init() {
+	$plugin_dir = basename( dirname( __FILE__ ) ) . '/languages';
+	load_plugin_textdomain( 'wp-youtube-lyte', null, $plugin_dir );
+	init_settings();
+	lytecache_doublecheck_activator();
+}
+
 /** hooking it all up to wordpress */
 if ( is_admin() ) {
     require_once(dirname(__FILE__).'/options.php');
     add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'lyte_add_action_link' );
-    add_action( 'admin_init', 'lytecache_doublecheck_activator' );
+    add_action( 'admin_init', 'lyte_plugin_init' );
 } else {
     add_filter( 'the_content', 'lyte_prepare', 4 );
     add_filter( 'the_content', 'lyte_parse', 10 );
     add_shortcode( 'lyte', 'shortcode_lyte' );
     remove_filter( 'get_the_excerpt', 'wp_trim_excerpt' );
     add_filter( 'get_the_excerpt', 'lyte_trim_excerpt', 10, 2 );
-    add_action( 'init', 'lytecache_doublecheck_activator' );
+    add_action( 'init', 'lyte_plugin_init' );
 
     /** API: action hook to allow extra actions or filters to be added */
     do_action('lyte_actionsfilters');
