@@ -6,7 +6,7 @@ License: GPLv3
 License URI: [https://www.gnu.org/licenses/gpl-3.0.html](https://www.gnu.org/licenses/gpl-3.0.html)
 Requires at least: 4.0
 Tested up to: 6.8
-Stable tag: 1.7.27
+Stable tag: 1.7.28
 
 High performance YouTube video, playlist and audio-only embeds which don't slow down your blog and offer optimal accessibility.
 
@@ -145,9 +145,13 @@ Just tell me, I like the feedback! Use the [Contact-page on my blog](http://blog
 
 == Changelog ==
 
+= 1.7.28 =
+* add alt attribute to thumbnail image in the noscript tag (hat tip Ov3rfly)
+* fix for bedrock-autoloader compat regression (thx Gerwin)
+
 = 1.7.27 =
 * fix for the _load_textdomain_just_in_time notice
-* fix for youtube URL in text getting replaced if the same URL is already replaced correctly, kudo's to Nic Jansma!
+* fix for youtube URL in text getting replaced if the same URL is already replaced correctly, kudo’s to Nic Jansma!
 
 = 1.7.26 =
 * fix the figcaption regression 

@@ -4,7 +4,7 @@ Plugin Name: WP YouTube Lyte
 Plugin URI: http://blog.futtta.be/wp-youtube-lyte/
 Description: Lite and accessible YouTube audio and video embedding.
 Author: Frank Goossens (futtta)
-Version: 1.7.27
+Version: 1.7.28
 Author URI: http://blog.futtta.be/
 Text Domain: wp-youtube-lyte
 */
@@ -14,7 +14,7 @@ Text Domain: wp-youtube-lyte
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 $debug           = false;
-$lyte_version    = '1.7.27';
+$lyte_version    = '1.7.28';
 $lyte_db_version = get_option( 'lyte_version', 'none' );
 
 /** have we updated? */
@@ -49,7 +49,7 @@ if ($lyte_db_version !== $lyte_version) {
 }
 
 /** are we in debug-mode */
-
+global $wyl_version, $wyl_file, $wyl_file_lazyload;
 if (!$debug) {
     $wyl_version       = $lyte_version;
     $wyl_file          = 'lyte-min.js';
@@ -312,8 +312,11 @@ function lyte_parse( $the_content, $doExcerpt = false ) {
                         $thumbUrl = '//i.ytimg.com/vi/' . $vid . '/hqdefault.jpg';
                     }
                 }
-                if ( strpos( $noscript, 'alt=""' ) !== false && array_key_exists( 'title', $yt_resp_array ) ) {
+
+                if ( strpos( $noscript, 'alt=""' ) !== false && array_key_exists( 'title', $yt_resp_array ) && ! empty( $yt_resp_array["title"] ) ) {
                     $noscript = str_replace( 'alt=""', 'alt="' . htmlentities( $yt_resp_array["title"] ). '"', $noscript );
+                } else if ( strpos( $noscript, 'alt=""' ) !== false ) {
+			$noscript = str_replace( 'alt=""', 'alt="' . esc_attr__( 'YouTube video thumbnail', 'wp-youtube-lyte' ) . '"', $noscript );
                 }
             } else {
                 $thumbUrl = "//i.ytimg.com/vi/".$vid."/hqdefault.jpg";
