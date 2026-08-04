@@ -4,7 +4,7 @@ Plugin Name: WP YouTube Lyte
 Plugin URI: http://blog.futtta.be/wp-youtube-lyte/
 Description: Lite and accessible YouTube audio and video embedding.
 Author: Frank Goossens (futtta)
-Version: 1.7.30
+Version: 1.7.31
 Author URI: http://blog.futtta.be/
 Text Domain: wp-youtube-lyte
 */
@@ -14,7 +14,7 @@ Text Domain: wp-youtube-lyte
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 $debug           = false;
-$lyte_version    = '1.7.30';
+$lyte_version    = '1.7.31';
 $lyte_db_version = get_option( 'lyte_version', 'none' );
 
 /** have we updated? */
@@ -316,7 +316,7 @@ function lyte_parse( $the_content, $doExcerpt = false ) {
                 if ( strpos( $noscript, 'alt=""' ) !== false && array_key_exists( 'title', $yt_resp_array ) && ! empty( $yt_resp_array["title"] ) ) {
                     $noscript = str_replace( 'alt=""', 'alt="' . htmlentities( $yt_resp_array["title"] ). '"', $noscript );
                 } else if ( strpos( $noscript, 'alt=""' ) !== false ) {
-			$noscript = str_replace( 'alt=""', 'alt="' . esc_attr__( 'YouTube video thumbnail', 'wp-youtube-lyte' ) . '"', $noscript );
+                    $noscript = str_replace( 'alt=""', 'alt="' . esc_attr__( 'YouTube video thumbnail', 'wp-youtube-lyte' ) . '"', $noscript );
                 }
             } else {
                 $thumbUrl = "//i.ytimg.com/vi/".$vid."/hqdefault.jpg";
@@ -367,7 +367,7 @@ function lyte_parse( $the_content, $doExcerpt = false ) {
                 $lytetemplate = '<a href="' . $postURL . '"><img src="' . $thumbUrl . '" alt="YouTube Video"></a>' . $textLink;
                 $templateType = 'feed';
             } elseif ( $audio !== true && $plClass !== " playlist" && $lyteSettings['microdata'] === "1" && $noMicroData !== "1" ) {
-                $lytetemplate = $wrapper . '<div class="lyMe' . $audioClass . $hidefClass . $plClass . $qsaClass . '" id="WYL_' . $vid . '" itemprop="video" itemscope itemtype="https://schema.org/VideoObject"><div><meta itemprop="thumbnailUrl" content="' . $thumbUrl . '" /><meta itemprop="embedURL" content="https://www.youtube.com/embed/' . $vid . '" /><meta itemprop="duration" content="' . $yt_resp_array['duration'] . '" /><meta itemprop="uploadDate" content="' . $yt_resp_array["dateField"] . '" /></div>' . $captionsMeta. '<div id="lyte_' . $vid . '" data-src="' . $thumbUrl . '" class="pL'.($lyteSettings['lyte_use_internal_lazyloader'] ? " wyl-lazy" : "").'"><div class="tC' . $titleClass . '"><div class="tT" itemprop="name">' . $yt_resp_array["title"] . '</div></div><div class="play"></div><div class="ctrl"><div class="Lctrl"></div><div class="Rctrl"></div></div></div>' . $noscript . '<meta itemprop="description" content="' . $yt_resp_array["description"] . '"></div></div>' . $lytelinks_txt;
+                $lytetemplate = $wrapper . '<div class="lyMe' . $audioClass . $hidefClass . $plClass . $qsaClass . '" id="WYL_' . $vid . '" itemprop="video" itemscope itemtype="https://schema.org/VideoObject"><div><meta itemprop="thumbnailUrl" content="' . $thumbUrl . '" /><meta itemprop="embedURL" content="https://www.youtube.com/embed/' . $vid . '" /><meta itemprop="duration" content="' . $yt_resp_array['duration'] . '" /><meta itemprop="uploadDate" content="' . $yt_resp_array["dateField"] . '" /></div>' . $captionsMeta. '<div id="lyte_' . $vid . '" data-src="' . $thumbUrl . '" class="pL'.($lyteSettings['lyte_use_internal_lazyloader'] ? " wyl-lazy" : "").'"><div class="tC' . $titleClass . '"><div class="tT" itemprop="name">' . $yt_resp_array["title"] . '</div></div><button tabindex="0" class="play"></button><div class="ctrl"><div class="Lctrl"></div><div class="Rctrl"></div></div></div>' . $noscript . '<meta itemprop="description" content="' . $yt_resp_array["description"] . '"></div></div>' . $lytelinks_txt;
                 $templateType = 'postMicrodata';
             } else {
                 $lytetemplate = $wrapper . '<div class="lyMe' . $audioClass . $hidefClass . $plClass . $qsaClass . '" id="WYL_' . $vid . '"><div id="lyte_' . $vid . '" data-src="' . $thumbUrl . '" class="pL'.($lyteSettings['lyte_use_internal_lazyloader'] ? " wyl-lazy" : "").'">';
@@ -375,7 +375,7 @@ function lyte_parse( $the_content, $doExcerpt = false ) {
                     $lytetemplate .= '<div class="tC' . $titleClass . '"><div class="tT">' . $_this_title . '</div></div>';
                 }
 
-                $lytetemplate .= '<div class="play"></div><div class="ctrl"><div class="Lctrl"></div><div class="Rctrl"></div></div></div>' . $noscript . '</div></div>' . $lytelinks_txt;
+                $lytetemplate .= '<button tabindex="0" class="play"></button><div class="ctrl"><div class="Lctrl"></div><div class="Rctrl"></div></div></div>' . $noscript . '</div></div>' . $lytelinks_txt;
                 $templateType="post";
             }
 
@@ -426,12 +426,6 @@ function lyte_get_YT_resp( $vid, $playlist=false, $cachekey='', $apiTestKey='', 
         $cache_resp = get_post_meta( $postID, $cachekey, true );
         if ( ! empty( $cache_resp ) ) {
             $_thisLyte = json_decode( gzuncompress( base64_decode( $cache_resp ) ), 1 );
-            // make sure there are not old APIv2 full responses in cache
-            if ( array_key_exists( 'entry', $_thisLyte ) ) {
-                if ( $_thisLyte['entry']['xmlns$yt'] === 'http://gdata.youtube.com/schemas/2007' ) {
-                    $_thisLyte = array();
-                }
-            }
         }
     } else if ( $isWidget ) {
         $cache_resp = get_option( 'lyte_widget_cache' );
@@ -584,8 +578,8 @@ function lyte_initer() {
 /* actual initialization */
 function lyte_init( $echo = true ) {
     global $lyteSettings;
-    $lyte_css = '.lyte-wrapper-audio div, .lyte-wrapper div {margin:0px; overflow:hidden;} .lyte,.lyMe{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background-color:#777;} .fourthree .lyMe, .fourthree .lyte {padding-bottom:75%;} .lidget{margin-bottom:5px;} .lidget .lyte, .widget .lyMe {padding-bottom:0!important;height:100%!important;} .lyte-wrapper-audio .lyte{height:38px!important;overflow:hidden;padding:0!important} .lyMe iframe, .lyte iframe,.lyte .pL{position:absolute !important;top:0;left:0;width:100%;height:100%!important;background:no-repeat scroll center #000;background-size:cover;cursor:pointer} .tC{left:0;position:absolute;top:0;width:100%} .tC{background-image:linear-gradient(to bottom,rgba(0,0,0,0.6),rgba(0,0,0,0))} .tT{color:#FFF;font-family:Roboto,sans-serif;font-size:16px;height:auto;text-align:left;padding:5px 10px 50px 10px} .play{background:no-repeat scroll 0 0 transparent;width:88px;height:63px;position:absolute;left:43%;left:calc(50% - 44px);left:-webkit-calc(50% - 44px);top:38%;top:calc(50% - 31px);top:-webkit-calc(50% - 31px);} .widget .play {top:30%;top:calc(45% - 31px);top:-webkit-calc(45% - 31px);transform:scale(0.6);-webkit-transform:scale(0.6);-ms-transform:scale(0.6);} .lyte:hover .play{background-position:0 -65px;} .lyte-audio .pL{max-height:38px!important} .lyte-audio iframe{height:438px!important} .lyte .ctrl{background:repeat scroll 0 -220px rgba(0,0,0,0.3);width:100%;height:40px;bottom:0px;left:0;position:absolute;} .lyte-wrapper .ctrl{display:none}.Lctrl{background:no-repeat scroll 0 -137px transparent;width:158px;height:40px;bottom:0;left:0;position:absolute} .Rctrl{background:no-repeat scroll -42px -179px transparent;width:117px;height:40px;bottom:0;right:0;position:absolute;padding-right:10px;}.lyte-audio .play{display:none}.lyte-audio .ctrl{background-color:rgba(0,0,0,1)}.lyte .hidden{display:none} .lyte-align.aligncenter{display:flex;flex-direction:column;align-items:center}.lyte-align.alignwide > *{width:auto !important}.lyte-align.alignfull > *{width:auto !important}';
-
+    $lyte_css = '.lyte-wrapper-audio div, .lyte-wrapper div {margin:0px; overflow:hidden;} .lyte,.lyMe{position:relative;padding-bottom:56.25%;height:0;overflow:hidden;background-color:#777;} .fourthree .lyMe, .fourthree .lyte {padding-bottom:75%;} .lidget{margin-bottom:5px;} .lidget .lyte, .widget .lyMe {padding-bottom:0!important;height:100%!important;} .lyte-wrapper-audio .lyte{height:38px!important;overflow:hidden;padding:0!important} .lyMe iframe, .lyte iframe,.lyte .pL{position:absolute !important;top:0;left:0;width:100%;height:100%!important;background:no-repeat scroll center #000;background-size:cover;cursor:pointer} .tC{left:0;position:absolute;top:0;width:100%} .tC{background-image:linear-gradient(to bottom,rgba(0,0,0,0.6),rgba(0,0,0,0))} .tT{color:#FFF;font-family:Roboto,sans-serif;font-size:16px;height:auto;text-align:left;padding:5px 10px 50px 10px} button.play{background:no-repeat scroll 0 0 transparent;width:88px;height:63px;position:absolute;left:43%;left:calc(50% - 44px);left:-webkit-calc(50% - 44px);top:38%;top:calc(50% - 31px);top:-webkit-calc(50% - 31px);} .widget .play {top:30%;top:calc(45% - 31px);top:-webkit-calc(45% - 31px);transform:scale(0.6);-webkit-transform:scale(0.6);-ms-transform:scale(0.6);} .lyte:hover .play, .lyte .play:focus{background-position:0 -65px;} .lyte-audio .pL{max-height:38px!important} .lyte-audio iframe{height:438px!important} .lyte .ctrl{background:repeat scroll 0 -220px rgba(0,0,0,0.3);width:100%;height:40px;bottom:0px;left:0;position:absolute;} .lyte-wrapper .ctrl{display:none}.Lctrl{background:no-repeat scroll 0 -137px transparent;width:158px;height:40px;bottom:0;left:0;position:absolute} .Rctrl{background:no-repeat scroll -42px -179px transparent;width:117px;height:40px;bottom:0;right:0;position:absolute;padding-right:10px;}.lyte-audio .play{display:none}.lyte-audio .ctrl{background-color:rgba(0,0,0,1)}.lyte .hidden{display:none} .lyte-align.aligncenter{display:flex;flex-direction:column;align-items:center}.lyte-align.alignwide > *{width:auto !important}.lyte-align.alignfull > *{width:auto !important}';
+    
     // by default show lyte vid on mobile (requiring user clicking play two times)
     // but can be overruled by this filter
     // also "do lyte mobile" when option to cache thumbnails is on to ensure privacy (gdpr)
@@ -656,7 +650,7 @@ function shortcode_lyte( $atts ) {
 
     $qs = '';
 
-    if ($audio) { $proto = 'httpa'; } else { $proto = 'httpv'; }
+    if ( $audio ) { $proto = 'httpa'; } else { $proto = 'httpv'; }
     if ( $start !== '' ) { $qs .= '&amp;start=' . esc_attr( $start ); }
     if ( $showinfo === 'false' ) { $qs .= '&amp;showinfo=0'; }
     if ( $hqthumb ) { $qs .= '&amp;hqThumb=1'; }
@@ -781,15 +775,15 @@ function lyte_prepare( $the_content ) {
             $params = json_decode('{' . $matches['params'] . '}', true);
             if ( empty( $params['url'] ) ) return $matches[0];
             $count = 0;
-            $url   = str_replace( 'https://www.youtube.com/playlist?list=', 'httpv://www.youtube.com/playlist?list=', $params['url'], $count );
+            $url   = str_replace( 'https://www.youtube.com/playlist?list=', 'httpv://www.youtube.com/playlist?list=', esc_url( $params['url'] ), $count );
             if ( ! $count ) {
-                $url = preg_replace( '%^https?://(?:www\.)?youtu(?:be\.com/watch\?v=|.be/)%', 'httpv://www.youtube.com/watch?v=', $params['url'], 1, $count );
+                $url = preg_replace( '%^https?://(?:www\.)?youtu(?:be\.com/watch\?v=|.be/)%', 'httpv://www.youtube.com/watch?v=', esc_url( $params['url'] ), 1, $count );
                 if ( ! $count ) {
                     return $matches[0];
                 }
             }
-            $alignClasses = isset($params['align']) ? ' lyte-align align' . $params['align'] : ''; 
-            return '<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube ' . (isset($params['className']) ? $params['className'] : '') . $alignClasses . '">' . $url . '<figcaption>' . (isset($matches['caption']) ? $matches['caption'] : '') . '</figcaption></figure>';
+            $alignClasses = isset( $params['align'] ) ? ' lyte-align align' . esc_attr( $params['align'] ) : ''; 
+            return '<figure class="wp-block-embed-youtube wp-block-embed is-type-video is-provider-youtube ' . ( isset( $params['className'] ) ? esc_attr( $params['className'] ) : '') . $alignClasses . '">' . $url . '<figcaption>' . ( isset ( $matches['caption'] ) ? wp_kses_post( $matches['caption'] ) : '') . '</figcaption></figure>';
         }, $the_content );
     }
 
